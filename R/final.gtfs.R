@@ -280,14 +280,14 @@ gtfs.bbox <- function(gtfs, type = c("bbox", "convex")) {
 
 ################################################################################
 
-gtfs.bbox_plot <- function(gtfs, type = c("bbox", "convex"), zoom_level ) {
+gtfs.bbox_plot <- function(gtfs_file, type = c("bbox", "convex"), zoom_level ) {
 	# remove the notes from the R CMD check
-	x <- y <- X1 <- X2 <- NULL
+	x <- y <- X1 <- X2 <- agency_name <- NULL
 	
 	#match the arguments and return error if required.
 	type <- match.arg(type)
 	# get the bbox
-	polygons <- gtfs.bbox(gtfs, type)
+	polygons <- gtfs.bbox(gtfs_file, type)
 	
 	if (type == "convex") {
 			bbox <- coord_map(xlim = extendrange(polygons$x), ylim = extendrange(polygons$y))
@@ -302,17 +302,17 @@ gtfs.bbox_plot <- function(gtfs, type = c("bbox", "convex"), zoom_level ) {
 			# assign base for the map
 			base <- with(polygons, get_map(paste(mean(y), mean(x), sep = " "), zoom = zoom_level, color = "bw"))
 		}
-	stop_points <- data.frame(cbind(gtfs@stops$stop_lat, gtfs@stops$stop_lon))
-	return(gtfs@agency_name)
-	#agency_ch <- as.character(gtfs@agency_name)
-	
+	stop_points <- data.frame(cbind(gtfs_file@stops$stop_lat, gtfs_file@stops$stop_lon))
+	#return(gtfs@agency_name)
+	#agency_ch <- "xxx"
+	agency_name <<- gtfs_file@agency_name
 	## use ggmap and ggplot to make the plot
 	ggmap(base) + 
-	  geom_path(data = polygons, aes(x, y, colour = gtfs@agency_name), size = 1) +
+	  geom_path(data = polygons, aes(x, y, colour = agency_name ), size = 1) +
 	  scale_color_manual(name = "Agency",values = c("blue", "green", "red")) +
 	  geom_point(data = stop_points, aes(x = X2, y = X1), size = 2, colour = "red") + # transit stops in black
 	  bbox +
-	  ggtitle(gtfs@agency_name)
+	  ggtitle(agency_name)
 }
 
 ################################################################################

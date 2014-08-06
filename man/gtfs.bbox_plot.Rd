@@ -4,11 +4,11 @@
 \title{Create a ggplot showing a map, google maps basemap, with the bounding box or convex hull.}
 \description{Output a ggplot graphic given a GTFS instance and type of bounding box and zoom level of map. }
 \usage{
-gtfs.bbox_plot(gtfs, type = c("bbox", "convex"), zoom_level)
+gtfs.bbox_plot(gtfs_file, type = c("bbox", "convex"), zoom_level)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{gtfs}{input instance of class GTFS.}
+  \item{gtfs_file}{input instance of class GTFS.}
   \item{type}{The type of bounding box to display. convex or bbox.}
   \item{zoom_level}{set the zoom level of the resulting google map.}
 }

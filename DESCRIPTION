@@ -4,15 +4,16 @@ Title: A package which provides some basic functionality to load a
         General Transit Feed Spec (GTFS) feed and perform some simple
         operations. This package utilizes code from ondrejivanic and it
         would not have been possible with out his functions.
-Version: 1.0
+Version: 1.1
 Date: 2014-08-04
 Author: Colin Broderick
 Maintainer: Colin Broderick <colin@cbroderick.me>
 Description: This package provides some S4 classes for importing and manipulating data from a GTFS feed.
 License: GPL (>= 2)
-Depends: ggplot2
+Depends: ggplot2, R (>= 2.14.1)
 Imports: methods, sp, rgdal, rgeos, scales, ggmap, lubridate, plyr,
         hexbin, doMC, reshape2, RColorBrewer
+Suggests: knitr
 ZipData: FALSE
 Packaged: 2014-08-06 19:36:39 UTC; colinbroderick
 VignetteBuilder:knitr

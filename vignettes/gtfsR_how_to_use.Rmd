@@ -1,0 +1,152 @@
+<!--
+%\VignetteEngine{knitr::docco_linear}
+%\VignetteIndexEntry{An Introduction to the GTFSr package}
+-->
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(out.extra='style="display:block; margin: auto"', fig.align="center")
+```
+
+This is an introduction to the GTFSr (General Transit Feed Spec R) Package
+=======================
+
+
+Introduction
+-------------
+
+This package was developed by myself, [Colin Broderick](http://www.cbroderick.me), by creating some new functions, wrapping objects in S4 classes, performing their validation and reusing functions written in  [ondrejivanic's gtfs scripts](https://github.com/ondrejivanic/131500)
+
+The main purpose of this package is to download a GTFS feed zip file from a url, unzip it, load it into R as an S4 class and perform some basic transport statistics on it.
+
+The Package
+-----------
+This is a package called **GTFSr**.  You can load it like this:
+```{r methods, warning=FALSE}
+library(GTFSr)
+```
+
+The package contains the following functions:
+```{r functions}
+ls("package:GTFSr")
+```
+
+What is a GTFS Feed file?
+----------------
+The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS "feeds" allow public transit agencies to publish their transit data and developers to write applications that consume that data in an interoperable way. ([Google, 2014](https://developers.google.com/transit/gtfs/))
+
+This standard defines a number of required **.csv **files. This package makes use of the required **.csv** files and some optional ones. An overview of the files and their purpose is given below:
+
+| Filename        | Required		| Defines  |
+| ------------- |:-------------:	| :-----------------------------------------------------------------|
+| agency.txt    | **Required**			 | One or more transit agencies that provide the data in this feed. |
+| stops.txt     | **Required **    		 | Individual locations where vehicles pick up or drop off passengers. |
+| routes.txt 	| **Required**      	 | Transit routes. A route is a group of trips that are displayed to riders as a single service. |
+| trips.txt 		| **Required** 		 | Trips for each route. A trip is a sequence of two or more stops that occurs at specific time. |
+| stop_times.txt 	| **Required**		 | Times that a vehicle arrives at and departs from individual stops for each trip. |
+| calendar.txt		| **Required**		 | Dates for service IDs using a weekly schedule. Specify when service starts and ends, as well as days of the week where service is available. |
+| calendar_dates.txt | **Optional** 	 | Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL dates of service, this file may be specified instead of calendar.txt. |
+| fare_attributes.txt | **Optional**	 | Fare information for a transit organization's routes.
+| fare_rules.txt	| ** Optional**		 | Rules for applying fare information for a transit organization's routes. | 
+| shapes.txt		| **Optional**		 | Rules for drawing lines on a map to represent a transit organization's routes. | 
+| frequencies.txt	| **Optional**		 | Headway (time between trips) for routes with variable frequency of service. | 
+| transfers.txt		| **Optional**		 | Rules for making connections at transfer points between routes. | 
+| feed_info.txt		| **Optional**		 | Additional information about the feed itself, including publisher, version, and expiration information.
+
+
+### Download a GTFS File
+It is best to see how this package works by providing a real world example. We will start 
+by downloading a small GTFS file for an agency in Ireland called AirCoach which provides 
+local, and long distance coach services.
+
+```{r notes, cache=TRUE}
+## we first run download function to download and unzip the file folder in the current directory.
+download.gtfs.file("http://www.transportforireland.ie/transitData/google_transit_aircoach.zip", "data/aircoach")
+```
+Next we will load the AirCoach GTFS feed into our classes and a variable called **air**
+
+```{r, aircoachload, eval=TRUE, cache=TRUE }
+### load in your gtfs dataset
+air <- gtfs.make("data/aircoach")
+```
+
+## Some feed info
+We might want a map of the area covered by the feed and maybe we might like to show it's bounding box.
+
+We have two methods to do this, we can use a bounding box (**bbox**) or a convex hull (**convex**), both provided by the [sp package](http://cran.r-project.org/web/packages/sp/index.html).
+
+we use the function **gtfs.bbox_plot** to do this.
+
+We supply the GTFS object from **gtfs.make**, a **bounding box method** and a **zoom level** for the resulting map.
+
+```{r eval=FALSE}
+gtfs.bbox_plot(GTFS, BBOX, ZOOM)
+```
+
+Now to display the map in one line do the following:
+
+```{r, show-bbox, cache=TRUE, fig.keep='high', message=FALSE, fig.show='hold', out.width=380, out.extra='style="align:left; margin:0 10px;display:inline"', fig.retina=2, fig.cap='AirCoach service area using bounding box (left) and convex hull (right).'}
+gtfs.bbox_plot(air, "bbox", 7) 
+gtfs.bbox_plot(air, "convex", 7) 
+```
+
+Let's get a summary for a particular day in the year. To do this we can use the gtfs.trips function. This will query the trips, calendar, calendar_dates classes to return a data.frame containing all the trips for a given day.
+
+```{r eval=FALSE}
+gtfs.trips(GTFS, as.POSIXct("YYYY-MM-DD"))
+```
+
+Now with the real example. 
+
+```{r}
+air.20140802 <- gtfs.trips(air, as.POSIXct("2014-08-02"))
+air.20130802 <- gtfs.trips(air, as.POSIXct("2013-08-02"))
+```
+We will also get a summary of those trips using the gtfs.trips.summary function. 
+This function reorganises the trips file so that we can get some basic network statistics.
+
+```{r basic-stats, cache=TRUE, echo=FALSE}
+
+air14.summary <- gtfs.trips.summary(air.20140802)
+air13.summary <- gtfs.trips.summary(air.20130802)
+
+air14.stats <- timetable.stats(air14.summary, air)
+air13.stats <- timetable.stats(air13.summary, air)
+
+```
+
+We know that AirCoach only operates bus services so the values for train and ferry will be blank.
+
+                | Timetable 2014-08-02  | Timetable 2013-08-02
+----------------|-----------------------------------------:|---------------------------------------:
+Number of trips | `r air14.stats[["total.trips"]]` | `r air13.stats[["total.trips"]]`
+ - Bus          | `r air14.stats[["bus.trips"]]`   | `r air13.stats[["bus.trips"]]`
+ - Train        | `r air14.stats[["train.trips"]]` | `r air13.stats[["train.trips"]]`
+ - Ferry        | `r air14.stats[["ferry.trips"]]` | `r air13.stats[["ferry.trips"]]`
+Longest trip    | |
+ - Bus          | `r air14.stats[["bus.longest"]]`   | `r air13.stats[["bus.longest"]]`
+ - Train        | `r air14.stats[["train.longest"]]` | `r air13.stats[["train.longest"]]`
+ - Ferry        | `r air14.stats[["ferry.longest"]]` | `r air13.stats[["ferry.longest"]]`
+
+
+### Some graphs
+Maybe you would like to show the relative speed of trips in the network when
+compared to say average cycle speed and car speeds in Dublin.
+
+```{r, show-speeds, cache=TRUE, fig.keep='high', fig.retina=2}
+l <- summary(lm(travel_time ~ distance, data = air14.summary))		
+ggplot(data = air14.summary, aes(y = travel_time, x = distance)) + 
+    geom_point(aes(colour = route_type), alpha = 0.7) +
+    geom_abline(intercept = 0, slope = 32, linetype = "dotted") + # cars
+	geom_abline(intercept = 0, slope = 20, linetype = "dotted") + # bikes
+    geom_abline(intercept = l$coef[1, 1], slope = l$coef[2, 1], linetype = "solid") + # PM peak
+    # scale_y_continuous(breaks = seq(0, 5, 1) * 3600, labels = seq(0, 5)) +
+    facet_grid(route_type ~ .) +
+    ylab("Travel time [hours]") +
+    xlab("Distance [km]") +
+    ggtitle("AirCoach Trips\n(Car: 42km/h, Cycling: 20km/h)")  		
+
+```
+
+
+
