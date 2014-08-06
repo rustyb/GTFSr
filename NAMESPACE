@@ -1,0 +1,13 @@
+exportPattern("^[[:alpha:]]+")
+exportClasses(
+    "Agency",
+     "Calendar",
+     "CalendarDates",
+     "GTFS",
+     "Routes",
+     "Shapes",
+     "Stops",
+     "StopTimes",
+     "Trips" 
+)
+import(methods, sp, rgdal, rgeos, ggplot2, scales, ggmap, lubridate, plyr, hexbin, doMC, reshape2, RColorBrewer)
