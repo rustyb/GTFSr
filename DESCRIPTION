@@ -15,3 +15,4 @@ Imports: methods, sp, rgdal, rgeos, scales, ggmap, lubridate, plyr,
         hexbin, doMC, reshape2, RColorBrewer
 ZipData: FALSE
 Packaged: 2014-08-06 19:36:39 UTC; colinbroderick
+VignetteBuilder:knitr

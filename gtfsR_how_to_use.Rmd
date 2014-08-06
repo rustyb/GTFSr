@@ -1,0 +1,71 @@
+<!--
+%\VignetteEngine{knitr::docco_linear}
+%\VignetteIndexEntry{An Introduction to the GTFSr package}
+-->
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(out.extra='style="display:block; margin: auto"', fig.align="center")
+```
+
+This is an introduction to the GTFSr (General Transit Feed Spec R) Package
+=======================
+
+
+Introduction
+-------------
+
+This package was developed by myself, [Colin Broderick](http://www.cbroderick.me), by creating some new functions, wrapping objects in S4 classes, performing their validation and reusing functions written in  [ondrejivanic's gtfs scripts](https://github.com/ondrejivanic/131500)
+
+The main purpose of this package is to download a GTFS feed zip file from a url, unzip it, load it into R as an S4 class and perform some basic transport statistics on it.
+
+The Package
+-----------
+This is a package called **GTFSr**.  You can load it like this:
+```{r methods}
+library(GTFSr)
+```
+
+The package contains the following functions:
+```{r functions}
+ls("package:GTFSr")
+```
+
+What is a GTFS Feed file?
+----------------
+The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS "feeds" allow public transit agencies to publish their transit data and developers to write applications that consume that data in an interoperable way. ([Google, 2014](https://developers.google.com/transit/gtfs/))
+
+This standard defines a number of required **.csv **files. This package makes use of the required **.csv** files and some optional ones. An overview of the files and their purpose is given below:
+
+| Filename        | Required	| Defines  |
+| ------------- |:-------------:| -----:|
+| agency.txt    | Required		| One or more transit agencies that provide the data in this feed. |
+| stops.txt     | Required     	| Individual locations where vehicles pick up or drop off passengers. |
+| routes.txt 	| Required      | Transit routes. A route is a group of trips that are displayed to riders as a single service. |
+| trips.txt 	| Required 		| Trips for each route. A trip is a sequence of two or more stops that occurs at specific time. |
+| stop_times.txt | Required	| Times that a vehicle arrives at and departs from individual stops for each trip. |
+|calendar.txt	| Required	| Dates for service IDs using a weekly schedule. Specify when service starts and ends, as well as days of the week where service is available. |
+| calendar_dates.txt |	Optional |	Exceptions for the service IDs defined in the calendar.txt file. If calendar_dates.txt includes ALL dates of service, this file may be specified instead of calendar.txt. |
+| fare_attributes.txt	| Optional	| Fare information for a transit organization's routes.
+| fare_rules.txt	| Optional	Rules for applying fare information for a transit organization's routes. | 
+| shapes.txt	| Optional	Rules for drawing lines on a map to represent a transit organization's routes. | 
+frequencies.txt	| Optional	Headway (time between trips) for routes with variable frequency of service. | 
+| transfers.txt	| Optional	Rules for making connections at transfer points between routes. | 
+| feed_info.txt	| Optional	Additional information about the feed itself, including publisher, version, and expiration information.
+
+
+### Download a GTFS File
+It is best to see how this package works by providing a real world example. We will start 
+by downloading a small GTFS file for an agency in Ireland called AirCoach which provides 
+local, and long distance coach services.
+
+```{r notex, EVAL=FALSE}
+# we first run download function to download and unzip the file folder in the current directory.
+download.gtfs.file("http://www.transportforireland.ie/transitData/google_transit_aircoach.zip", "data/aircoach")
+## load in your gtfs dataset
+air <- gtfs.make("data/aircoach")
+```
+
+
+
+
